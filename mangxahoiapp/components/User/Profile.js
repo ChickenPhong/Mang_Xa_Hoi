@@ -24,8 +24,8 @@ const Profile = ({ route, navigation }) => {
   const getVaiTroName = (vaiTro) => {
     switch (vaiTro) {
       case 1: return "Quản trị viên";
-      case 2: return "Chủ nhà trọ";
-      case 3: return "Người thuê trọ";
+      case 2: return "Giảng viên";
+      case 3: return "Cựu sinh viên";
       default: return "Chưa xác định";
     }
   };
@@ -40,7 +40,7 @@ const Profile = ({ route, navigation }) => {
 
   useEffect(() => {
     if (user) {
-      fetch(`https://toquocbinh2102.pythonanywhere.com/baidangs/`)
+      fetch(`https://chickenphong.pythonanywhere.com/baidangs/`)
         .then((response) => response.json())
         .then((data) => {
           const filteredPosts = data.filter(post => post.nguoiDangBai === user.id);
@@ -61,7 +61,7 @@ const Profile = ({ route, navigation }) => {
     }
   
   
-    fetch("https://toquocbinh2102.pythonanywhere.com/baidangs/", {
+    fetch("https://chickenphong.pythonanywhere.com/baidangs/", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -100,7 +100,7 @@ const Profile = ({ route, navigation }) => {
         <>
           <View style={styles.profileHeader}>
             <Image
-              source={user.image ? { uri: `https://toquocbinh2102.pythonanywhere.com${user.image}` } : null}
+              source={user.image ? { uri: `https://chickenphong.pythonanywhere.com${user.image}` } : null}
               style={styles.profileImage}
             />
             <View style={styles.profileInfo}>

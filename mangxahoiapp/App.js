@@ -80,26 +80,6 @@ const HomeStackNavigator = () => {
         component={TrangCaNhan}
         options={{ title: "Trang cá nhân" }}
       />
-      <Stack.Screen
-        name="QuanLyTro"
-        component={QuanLyTro}
-        options={{ title: "Quản lý trọ" }}
-      />
-      <Stack.Screen
-        name="ThemTro"
-        component={ThemTro}
-        options={{ title: "Thêm trọ" }}
-      />
-      <Stack.Screen
-        name="ChiTietTro"
-        component={ChiTietTro}
-        options={{ title: "Chi tiết trọ" }}
-      />
-       <Stack.Screen
-        name="TimTro"
-        component={TimTro}
-        options={{ title: "Tìm trọ" }}
-      />
 
     </Stack.Navigator>
   );
@@ -122,26 +102,6 @@ const ProfileStackNavigator = () => {
         name="TrangCaNhan"
         component={TrangCaNhan}
         options={{ title: "Trang cá nhân" }}
-      />
-       <Stack.Screen
-        name="QuanLyTro"
-        component={QuanLyTro}
-        options={{ title: "Quản lý trọ" }}
-      />
-      <Stack.Screen
-        name="ThemTro"
-        component={ThemTro}
-        options={{ title: "Thêm trọ" }}
-      />
-      <Stack.Screen
-        name="ChiTietTro"
-        component={ChiTietTro}
-        options={{ title: "Chi tiết trọ" }}
-      />
-       <Stack.Screen
-        name="TimTro"
-        component={TimTro}
-        options={{ title: "Tìm trọ" }}
       />
 
     </Stack.Navigator>

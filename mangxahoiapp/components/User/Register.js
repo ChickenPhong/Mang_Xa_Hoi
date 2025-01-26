@@ -158,19 +158,11 @@ const Register = () => {
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 10 }}>
                     <RadioButton
-                        value="2"
-                        status={user.vaiTro === '2' ? 'checked' : 'unchecked'}
-                        onPress={() => setUser({ ...user, vaiTro: '2' })}
-                    />
-                    <Text>CHUNHATRO (Chủ nhà trọ)</Text>
-                </View>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginHorizontal: 10 }}>
-                    <RadioButton
                         value="3"
                         status={user.vaiTro === '3' ? 'checked' : 'unchecked'}
                         onPress={() => setUser({ ...user, vaiTro: '3' })}
                     />
-                    <Text>NGUOITHUETRO (Người thuê trọ)</Text>
+                    <Text>CUUSINHVIEN (Cựu Sinh Viên)</Text>
                 </View>
 
                 <TouchableOpacity onPress={handleImagePick}>

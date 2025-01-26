@@ -13,12 +13,12 @@ const TrangCaNhan = ({ route, navigation }) => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [userTuongTac, setUserTuongTac] = useState([]); // State lưu danh sách tuongTac từ API
 
-  const API_URL = "https://toquocbinh2102.pythonanywhere.com"; // API URL chính
+  const API_URL = "https://chickenphong.pythonanywhere.com"; // API URL chính
 
   const getVaiTroName = (vaiTro) => {
     if (vaiTro === 1) return "Quản trị viên";
-    else if (vaiTro === 2) return "Chủ nhà trọ";
-    else if (vaiTro === 3) return "Người thuê trọ";
+    else if (vaiTro === 2) return "Giảng viên";
+    else if (vaiTro === 3) return "Cựu sinh viên";
   };
 
   const formatDate = (date) => {

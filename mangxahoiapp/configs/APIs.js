@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://toquocbinh2102.pythonanywhere.com/";
+const BASE_URL = "https://chickenphong.pythonanywhere.com";
 
 export const endpoints = {
     'baidangs': '/baidangs/',

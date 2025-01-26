@@ -77,11 +77,6 @@ const Home = () => {
   return (
     <ScrollView style={styles.container}> 
       <View style={styles.header}>
-        <Button
-          onPress={() => navigation.navigate("TimTro")}  
-          title="Tìm Trọ" 
-          color="#0288d1"  
-        />
         <Text style={styles.title}>Bài đăng</Text>
         <Ionicons
           name="search"
@@ -122,7 +117,7 @@ const Home = () => {
             <Avatar
               rounded
               size="medium"
-              source={users[b.nguoiDangBai]?.image ? { uri: `https://toquocbinh2102.pythonanywhere.com${users[b.nguoiDangBai].image}` } : null}
+              source={users[b.nguoiDangBai]?.image ? { uri: `https://chickenphong.pythonanywhere.com${users[b.nguoiDangBai].image}` } : null}
             />
             <ListItem.Content>
               <View style={styles.postHeader}>
