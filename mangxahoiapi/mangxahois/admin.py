@@ -24,15 +24,15 @@ class MyAdminSite(admin.AdminSite):
         })
 
 class UserAdmin(admin.ModelAdmin):
-    fields = ('username', 'password', 'email', 'first_name', 'last_name', 'SDT', 'vaiTro', 'image', 'is_active')
+    fields = ('username', 'password', 'email', 'first_name', 'last_name', 'SDT', 'vaiTro', 'image','avatar', 'is_active')
     list_display = ['username', 'email', 'SDT', 'vaiTro', 'is_active']
     search_fields = ['username']
-    readonly_fields = ['avatar_display']
+    readonly_fields = ['avatar']
 
-    def avatar_display(self, obj):
-        if obj.image:
-            return mark_safe(f'<img src="{obj.image.url}" width="100" />')
-        return "No avatar"
+    def avatar(self, nguoidung):
+        if nguoidung.image:
+            return mark_safe(f'<img src="{nguoidung.image.url}" width="200" />')
+        return "No Image"
 
     def save_model(self, request, obj, form, change):
         # Chỉ gán giá trị mặc định khi tạo mới người dùng

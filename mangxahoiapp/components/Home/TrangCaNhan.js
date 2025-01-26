@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from "react-native";
+import React, { useState, useEffect, useContext } from "react";
+import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, Button } from "react-native";
+import { MyUserContext, MyDispatchContext } from "../../configs/MyUserContext"; // Import context
+import axios from "axios";
+import { Ionicons } from 'react-native-vector-icons'; // Import icon
 
 const TrangCaNhan = ({ route, navigation }) => {
   const { userId } = route.params;
+  const userLogin = useContext(MyUserContext); // Lấy thông tin người dùng đăng nhập
+  const dispatch = useContext(MyDispatchContext); // Lấy dispatch để cập nhật dữ liệu người dùng
   const [userData, setUserData] = useState(null);
   const [userPosts, setUserPosts] = useState([]);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [userTuongTac, setUserTuongTac] = useState([]); // State lưu danh sách tuongTac từ API
+
+  const API_URL = "https://toquocbinh2102.pythonanywhere.com"; // API URL chính
 
   const getVaiTroName = (vaiTro) => {
-    if (vaiTro === 1) {
-      return "Quản trị viên";
-    } else if (vaiTro === 2) {
-      return "Giảng Viên";
-    } else if (vaiTro === 3) {
-      return "Cựu Sinh Viên";
-    }
+    if (vaiTro === 1) return "Quản trị viên";
+    else if (vaiTro === 2) return "Chủ nhà trọ";
+    else if (vaiTro === 3) return "Người thuê trọ";
   };
 
   const formatDate = (date) => {
@@ -25,19 +30,104 @@ const TrangCaNhan = ({ route, navigation }) => {
   };
 
   useEffect(() => {
-    fetch(`https://chickenphong.pythonanywhere.com/users/${userId}`)
-      .then((response) => response.json())
-      .then((data) => setUserData(data))
-      .catch((error) => console.error("Error fetching user data:", error));
+    const userLoginTmp = { ...userLogin, id: userLogin.id };
 
-    fetch(`https://chickenphong.pythonanywhere.com/baidang/`)
-      .then((response) => response.json())
-      .then((data) => {
-        const filteredPosts = data.filter(post => post.nguoiDangBai.id === userId);
+    // Lấy dữ liệu người dùng từ API
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/users/${userId}`);
+        setUserData(response.data);
+      } catch (error) {
+        console.error("Error fetching user data:", error.message);
+      }
+    };
+
+    // Lấy bài viết của người dùng
+    const fetchUserPosts = async () => {
+      try {
+        const response = await axios.get(`${API_URL}/baidangs/`);
+        const filteredPosts = response.data.filter(post => post.nguoiDangBai === userId);
         setUserPosts(filteredPosts);
-      })
-      .catch((error) => console.error("Error fetching user posts:", error));
-  }, [userId]);
+      } catch (error) {
+        console.error("Error fetching user posts:", error.message);
+      }
+    };
+
+    // Lấy danh sách tương tác của người dùng
+    const fetchTuongTacData = async () => {
+      try {
+        if (userLoginTmp?.id) {
+          const response = await axios.get(`${API_URL}/users/${userLoginTmp.id}`);
+          setUserTuongTac(response.data.tuongTac || []);
+          
+          // Kiểm tra nếu người dùng đã theo dõi
+          if (response.data.tuongTac && response.data.tuongTac.includes(userId)) {
+            setIsFollowing(true);
+          } else {
+            setIsFollowing(false);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching tuongTac data:", error.message);
+      }
+    };
+
+    // Gọi các hàm trên khi có sự thay đổi userId hoặc userLogin
+    fetchUserData();
+    fetchUserPosts();
+    fetchTuongTacData();
+
+  }, [userId, userLogin.id]);
+
+  const handleFollow = async () => {
+    try {
+      const updatedTuongTac = [...userTuongTac, userId];
+      setIsFollowing(true);
+
+      const formData = new FormData();
+      updatedTuongTac.forEach(id => formData.append('tuongTac', id));
+
+      await axios.patch(`${API_URL}/users/${userLogin.id}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer yourAccessToken`,
+        },
+      });
+
+      setUserTuongTac(updatedTuongTac);
+      console.log("Cập nhật thành công");
+    } catch (error) {
+      setIsFollowing(false);
+      console.error("Lỗi khi cập nhật:", error.message);
+    }
+  };
+
+  const handleUnfollow = async () => {
+    try {
+      const updatedTuongTac = userTuongTac.filter(item => item !== userId);
+      setIsFollowing(false);
+
+      const formData = new FormData();
+      updatedTuongTac.forEach(id => formData.append('tuongTac', id));
+
+      await axios.patch(`${API_URL}/users/${userLogin.id}/`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer yourAccessToken`,
+        },
+      });
+
+      setUserTuongTac(updatedTuongTac);
+      console.log("Successfully unfollowed");
+    } catch (error) {
+      setIsFollowing(true);
+      console.error("Error unfollowing user:", error.message);
+    }
+  };
+
+  const handleMessage = () => {
+    navigation.navigate('ChatScreen', { recipientId: userId });
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -45,7 +135,7 @@ const TrangCaNhan = ({ route, navigation }) => {
         <>
           <View style={styles.profileHeader}>
             <Image
-              source={userData && userData.image ? { uri: `https://chickenphong.pythonanywhere.com${userData.image}` } : null}
+              source={userData.image ? { uri: `${API_URL}${userData.image}` } : null}
               style={styles.profileImage}
             />
             <View style={styles.profileInfo}>
@@ -61,8 +151,30 @@ const TrangCaNhan = ({ route, navigation }) => {
             <Text style={styles.contactText}>Số điện thoại: {userData.SDT}</Text>
             <Text style={styles.contactText}>Email: {userData.email}</Text>
             <Text style={styles.contactText}>Vai trò: {getVaiTroName(userData.vaiTro)}</Text>
-            <Text style={styles.contactText}>Ngày tham gia: {formatDate(userData.date_joined)}</Text> 
+            <Text style={styles.contactText}>Ngày tham gia: {formatDate(userData.date_joined)}</Text>
           </View>
+
+          {userLogin.id !== userId && (
+            <View style={styles.followButtonContainer}>
+              {isFollowing ? (
+                <>
+                  <TouchableOpacity onPress={handleUnfollow} style={styles.button}>
+                    <Ionicons name="person-remove" size={24} color="#fff" />
+                    <Text style={styles.buttonText}>Hủy theo dõi</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={handleMessage} style={[styles.button, styles.messageButton]}>
+                    <Ionicons name="chatbubble-ellipses" size={24} color="#fff" />
+                    <Text style={styles.buttonText}>Nhắn tin</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <TouchableOpacity onPress={handleFollow} style={styles.button}>
+                  <Ionicons name="person-add" size={24} color="#fff" />
+                  <Text style={styles.buttonText}>Theo dõi</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          )}
 
           <Text style={styles.postsTitle}>Bài viết của {userData.first_name}:</Text>
 
@@ -153,6 +265,27 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: "#888",
     marginTop: 5,
+  },
+  followButtonContainer: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  button: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#0288d1',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 10,
+    justifyContent: 'center',
+  },
+  buttonText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontSize: 16,
+  },
+  messageButton: {
+    backgroundColor: '#388E3C',
   },
   postsTitle: {
     fontSize: 18,

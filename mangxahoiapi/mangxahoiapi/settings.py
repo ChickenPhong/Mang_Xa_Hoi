@@ -95,6 +95,7 @@ pymysql.install_as_MySQLdb()
 
 AUTH_USER_MODEL = 'mangxahois.User'
 
+MEDIA_URL = '/media/'
 MEDIA_ROOT = '%s/mangxahois/static/' % BASE_DIR
 CKEDITOR_UPLOAD_PATH = 'baidangs/'
 
