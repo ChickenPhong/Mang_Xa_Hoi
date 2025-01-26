@@ -6,9 +6,10 @@ from django.http import JsonResponse
 from django.db.models import Count
 from django.db.models.functions import TruncYear, TruncQuarter, TruncMonth, ExtractYear
 
-from .models import User, BaiDang, BinhLuan, Reaction, TraLoi
+from .models import User, BaiDang, BinhLuan, Reaction, TraLoi, KhaoSat, CauHoi, LuaChon, ThongBaoSuKien
 from .serializers import (
-    UserSerializer, BaiDangSerializer, BinhLuanSerializer, ReactionSerializer, TraLoiSerializer
+    UserSerializer, BaiDangSerializer, BinhLuanSerializer, ReactionSerializer, TraLoiSerializer, KhaoSatSerializer,
+    CauHoiSerializer, LuaChonSerializer, ThongBaoSuKienSerializer
 )
 
 
@@ -71,10 +72,29 @@ class ReactionViewSet(viewsets.ModelViewSet):
 
         return super().create(request, *args, **kwargs)
 
+class KhaoSatViewSet(viewsets.ModelViewSet):
+    queryset = KhaoSat.objects.all()
+    serializer_class = KhaoSatSerializer
+
+class CauHoiViewSet(viewsets.ModelViewSet):
+    queryset = CauHoi.objects.all()
+    serializer_class = CauHoiSerializer
+
+class LuaChonViewSet(viewsets.ModelViewSet):
+    queryset = LuaChon.objects.all()
+    serializer_class = LuaChonSerializer
+
 class TraLoiViewSet(viewsets.ModelViewSet):
     queryset = TraLoi.objects.all()
     serializer_class = TraLoiSerializer
 
+class ThongBaoSuKienViewSet(viewsets.ModelViewSet):
+    queryset = ThongBaoSuKien.objects.all().order_by('-ngay_gui')
+    serializer_class = ThongBaoSuKienSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(nguoiGui=self.request.user)
 # API thống kê người dùng
 def get_available_years(request):
     years = User.objects.annotate(year=ExtractYear('date_joined')).values_list('year', flat=True).distinct().order_by('year')

@@ -37,16 +37,9 @@ schema_view = get_schema_view(
     public=True,
 )
 
-# Định nghĩa router cho DRF ViewSets
-router = DefaultRouter()
-router.register(r'users', UserViewSet, basename='user')
-router.register(r'baidang', BaiDangViewSet, basename='baidang')
-router.register(r'binhluan', BinhLuanViewSet, basename='binhluan')
-router.register(r'reactions', ReactionViewSet, basename='reactions')
-
 urlpatterns = [
     # Các API chính
-    path('', include(router.urls)),
+    path('', include('mangxahois.urls')),
     path('admin/', admin_site.urls),
     path('user-stats-api/', user_stats_api, name='user_stats_api'),
     path('api/post-stats/', post_stats_api, name='post_stats_api'),
@@ -56,9 +49,9 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 
-    # CKEditor
+    re_path(r'^swagger(?P<format>\.json|\.yaml)$',schema_view.without_ui(cache_timeout=0),name='schema-json'),
+    re_path(r'^swagger/$',schema_view.with_ui('swagger', cache_timeout=0),name='schema-swagger-ui'),
+    re_path(r'^redoc/$',schema_view.with_ui('redoc', cache_timeout=0),name='schema-redoc'),
     re_path(r'^ckeditor/', include('ckeditor_uploader.urls')),
-
-    # OAuth2 authentication
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
 ]

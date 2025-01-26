@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import User, BaiDang, BinhLuan, Reaction, CauHoi, LuaChon, KhaoSat, TraLoi
+from .models import User, BaiDang, BinhLuan, Reaction, CauHoi, LuaChon, KhaoSat, TraLoi, ThongBaoSuKien
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -34,7 +34,6 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class BaiDangSerializer(serializers.ModelSerializer):
-    nguoiDangBai = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = BaiDang
@@ -42,7 +41,6 @@ class BaiDangSerializer(serializers.ModelSerializer):
 
 
 class BinhLuanSerializer(serializers.ModelSerializer):
-    nguoiBinhLuan = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = BinhLuan
@@ -50,7 +48,6 @@ class BinhLuanSerializer(serializers.ModelSerializer):
 
 
 class ReactionSerializer(serializers.ModelSerializer):
-    nguoiThucHien = UserDetailSerializer(read_only=True)
 
     class Meta:
         model = Reaction
@@ -70,7 +67,6 @@ class LuaChonSerializer(serializers.ModelSerializer):
 
 # Serializer cho khảo sát
 class KhaoSatSerializer(serializers.ModelSerializer):
-    cauhois = CauHoiSerializer(many=True, read_only=True)
 
     class Meta:
         model = KhaoSat
@@ -78,9 +74,6 @@ class KhaoSatSerializer(serializers.ModelSerializer):
 
 # Serializer cho câu trả lời của người dùng
 class TraLoiSerializer(serializers.ModelSerializer):
-    khaoSat = serializers.PrimaryKeyRelatedField(queryset=KhaoSat.objects.all())
-    cauHoi = serializers.PrimaryKeyRelatedField(queryset=CauHoi.objects.all())
-    luaChon = serializers.PrimaryKeyRelatedField(queryset=LuaChon.objects.all())
 
     class Meta:
         model = TraLoi
@@ -93,3 +86,8 @@ class TraLoiSerializer(serializers.ModelSerializer):
         if data['luaChon'].cauHoi != data['cauHoi']:
             raise serializers.ValidationError("Lựa chọn không thuộc về câu hỏi đã chọn.")
         return data
+
+class ThongBaoSuKienSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ThongBaoSuKien
+        fields = ['id', 'tieuDe', 'noiDung', 'nguoiGui', 'nhomNhan', 'ngay_gui']
