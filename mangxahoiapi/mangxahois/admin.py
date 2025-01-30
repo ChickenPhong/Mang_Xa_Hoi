@@ -4,7 +4,7 @@ from django.core.mail import send_mail
 from django.http import HttpResponseRedirect, request
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
-from django.utils.html import mark_safe
+from django.utils.html import mark_safe, strip_tags
 from .models import User, BaiDang, BinhLuan, Reaction, LuaChon, CauHoi, KhaoSat, TraLoi, ThongKeKhaoSat, VaiTro, ThongBaoSuKien
 
 
@@ -195,6 +195,8 @@ class ThongBaoSuKienForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Lọc người dùng có vai trò là Quản Trị Viên
+        self.fields['nguoiGui'].queryset = User.objects.filter(vaiTro=VaiTro.QUANTRIVIEN)
         # Lọc người dùng có vai trò là CỰU SINH VIÊN
         self.fields['nhomNhan'].queryset = User.objects.filter(vaiTro=VaiTro.CUUSINHVIEN)
 
@@ -206,14 +208,26 @@ class ThongBaoSuKienAdmin(admin.ModelAdmin):
     filter_horizontal = ('nhomNhan',)
 
     def save_model(self, request, obj, form, change):
-        # Lưu đối tượng trước để có ID
-        super().save_model(request, obj, form, change)
+        super().save_model(request, obj, form, change)  # Lưu trước để có ID
 
-        # Sau khi lưu, gửi email
+        # Đảm bảo rằng nhóm nhận đã được lưu
+        if 'nhomNhan' in form.cleaned_data:
+            obj.nhomNhan.set(form.cleaned_data['nhomNhan'])  # Cập nhật nhóm nhận
+
+        # Debug kiểm tra dữ liệu đã lưu
+        print(f"Thông báo ID {obj.id} được gửi đến nhóm: {list(obj.nhomNhan.values('id', 'username', 'email'))}")
+
+        # Gửi email sau khi đã lưu nhóm nhận
         self.send_email_notifications(request, obj)
 
     def send_email_notifications(self, request, obj):
         recipient_emails = [user.email for user in obj.nhomNhan.all() if user.email]
+
+        # Loại bỏ các thẻ HTML trong nội dung thông báo
+        clean_noiDung = strip_tags(obj.noiDung)
+
+        # Debug danh sách email
+        print("Danh sách email được gửi:", recipient_emails)
 
         if recipient_emails:
             subject = f"Thông báo sự kiện: {obj.tieuDe}"
@@ -221,7 +235,7 @@ class ThongBaoSuKienAdmin(admin.ModelAdmin):
                 f"Xin chào,\n\n"
                 f"Bạn đã nhận được một thông báo sự kiện mới từ hệ thống.\n\n"
                 f"Nội dung sự kiện:\n"
-                f"{obj.noiDung}\n\n"
+                f"{clean_noiDung}\n\n"  # Nội dung đã loại bỏ HTML
                 f"Vui lòng tham gia sự kiện đúng giờ.\n\n"
                 f"Trân trọng,\nQuản trị viên"
             )
@@ -232,7 +246,6 @@ class ThongBaoSuKienAdmin(admin.ModelAdmin):
                 self.message_user(request, f"Lỗi khi gửi email: {e}", level="ERROR")
         else:
             self.message_user(request, "Không có email nào hợp lệ để gửi thông báo.", level="WARNING")
-
     def response_add(self, request, obj, post_url_continue=None):
         if "_addanother" in request.POST:
             return super().response_add(request, obj, post_url_continue)

@@ -1,6 +1,10 @@
 from rest_framework import serializers
+import re
 from .models import User, BaiDang, BinhLuan, Reaction, CauHoi, LuaChon, KhaoSat, TraLoi, ThongBaoSuKien
 
+# Hàm loại bỏ thẻ HTML
+def strip_html_tags(text):
+    return re.sub(r'<.*?>', '', text) if text else text
 
 class UserSerializer(serializers.ModelSerializer):
     tuongTac = serializers.PrimaryKeyRelatedField(
@@ -9,23 +13,42 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'password', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'tuongTac']
-        extra_kwargs = {'password': {'write_only': True}}
+        fields = ['id', 'password', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'tuongTac','date_joined']
+        extra_kwargs = {'password': {'write_only': 'true'}}
 
     def create(self, validated_data):
-        tuong_tac_data = validated_data.pop('tuongTac', None)
-        password = validated_data.pop('password', None)
 
-        user = User(**validated_data)
-        if password:
-            user.set_password(password)
-        user.save()
+        # b 22/01
+        tuong_tac_data = validated_data.pop('tuongTac', None)
+        data = validated_data.copy()
+        u = User(**data)
+        u.set_password(u.password)
+        u.save()
+        if tuong_tac_data:
+            u.tuongTac.set(tuong_tac_data)  # Sang 24/1
+
+        u.save()
+
+    def update(self, instance, validated_data):  # Sang 24/1
+        tuong_tac_data = validated_data.pop('tuongTac', None)
+        instance = super().update(instance, validated_data)
 
         if tuong_tac_data:
-            user.tuongTac.set(tuong_tac_data)
+            instance.tuongTac.set(tuong_tac_data)
 
-        return user
+        instance.save()
+        return instance
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data['image'] = instance.image.url if instance.image else ''
+        return data
+    # b
+
+class User2(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'date_joined']
 
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -67,10 +90,14 @@ class LuaChonSerializer(serializers.ModelSerializer):
 
 # Serializer cho khảo sát
 class KhaoSatSerializer(serializers.ModelSerializer):
+    moTa = serializers.SerializerMethodField()
 
     class Meta:
         model = KhaoSat
         fields = ['id', 'tieuDe', 'moTa', 'nguoiTao', 'created_date', 'is_active', 'cauhois']
+
+    def get_moTa(self, obj):
+        return strip_html_tags(obj.moTa)  # Loại bỏ thẻ HTML
 
 # Serializer cho câu trả lời của người dùng
 class TraLoiSerializer(serializers.ModelSerializer):
@@ -88,6 +115,11 @@ class TraLoiSerializer(serializers.ModelSerializer):
         return data
 
 class ThongBaoSuKienSerializer(serializers.ModelSerializer):
+    noiDung = serializers.SerializerMethodField()
+
     class Meta:
         model = ThongBaoSuKien
         fields = ['id', 'tieuDe', 'noiDung', 'nguoiGui', 'nhomNhan', 'ngay_gui']
+
+    def get_noiDung(self, obj):
+        return strip_html_tags(obj.noiDung)  # Loại bỏ thẻ HTML
