@@ -1,4 +1,5 @@
 from django.contrib.auth.hashers import check_password
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
@@ -9,7 +10,7 @@ from django.http import JsonResponse
 from django.db.models import Count
 from django.db.models.functions import TruncYear, TruncQuarter, TruncMonth, ExtractYear
 
-from .models import User, BaiDang, BinhLuan, Reaction, TraLoi, KhaoSat, CauHoi, LuaChon, ThongBaoSuKien
+from .models import User, BaiDang, BinhLuan, Reaction, TraLoi, KhaoSat, CauHoi, LuaChon, ThongBaoSuKien, ReactionType
 from .serializers import (
     UserSerializer, BaiDangSerializer, BinhLuanSerializer, ReactionSerializer, TraLoiSerializer, KhaoSatSerializer,
     CauHoiSerializer, LuaChonSerializer, ThongBaoSuKienSerializer
@@ -60,7 +61,7 @@ class UserViewSet(viewsets.ModelViewSet,
 
 # ViewSet cho BaiDang
 class BaiDangViewSet(viewsets.ModelViewSet):
-    queryset = BaiDang.objects.all()
+    queryset = BaiDang.objects.all().order_by('-created_date')
     serializer_class = BaiDangSerializer
 
     @action(methods=['post'], detail=True, url_path="khoa-binh-luan", url_name="khoa_binh_luan")
@@ -72,6 +73,17 @@ class BaiDangViewSet(viewsets.ModelViewSet):
             return Response({"message": "Bình luận đã bị khóa."}, status=status.HTTP_200_OK)
         except BaiDang.DoesNotExist:
             return Response({"error": "Bài viết không tồn tại."}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(methods=['get'], detail=True, url_path="tong-luot-tuong-tac", url_name="tong_luot_tuong_tac")
+    def tong_luot_tuong_tac(self, request, pk=None):
+        """ API trả về tổng lượt tương tác của bài đăng """
+        baidang = get_object_or_404(BaiDang, pk=pk)
+        return Response({
+            "tong_luot_tuong_tac": baidang.tong_luot_tuong_tac(),
+            "tong_luot_like": baidang.tong_luot_like(),
+            "tong_luot_love": baidang.tong_luot_love(),
+            "tong_luot_haha": baidang.tong_luot_haha()
+        }, status=status.HTTP_200_OK)
 
 
 # ViewSet cho BinhLuan
@@ -93,17 +105,31 @@ class ReactionViewSet(viewsets.ModelViewSet):
     serializer_class = ReactionSerializer
 
     def create(self, request, *args, **kwargs):
-        existing_reaction = Reaction.objects.filter(
-            baiDang=request.data.get('baiDang'),
-            nguoiThucHien=request.user
-        ).first()
+        """ API cho phép thêm/cập nhật cảm xúc của người dùng đối với bài đăng """
+        bai_dang = get_object_or_404(BaiDang, pk=request.data.get('baiDang'))
+        loai = request.data.get('loai')
 
-        if existing_reaction:
-            existing_reaction.loai = request.data.get('loai')
-            existing_reaction.save()
-            return Response({"message": "Cảm xúc đã được cập nhật."}, status=status.HTTP_200_OK)
+        if loai not in [ReactionType.LIKE.value, ReactionType.LOVE.value, ReactionType.HAHA.value]:
+            return Response({"error": "Loại cảm xúc không hợp lệ."}, status=status.HTTP_400_BAD_REQUEST)
 
-        return super().create(request, *args, **kwargs)
+        reaction, created = Reaction.objects.get_or_create(
+            baiDang=bai_dang,
+            nguoiThucHien=request.user,
+            defaults={'loai': loai}
+        )
+
+        if not created:
+            reaction.loai = loai
+            reaction.save()
+
+        return Response({"message": "Cảm xúc đã được cập nhật."}, status=status.HTTP_200_OK)
+
+    @action(methods=['delete'], detail=True, url_path="xoa-tuong-tac", url_name="xoa_tuong_tac")
+    def delete_reaction(self, request, pk=None):
+        """ API xóa cảm xúc của người dùng đối với bài đăng """
+        reaction = get_object_or_404(Reaction, pk=pk, nguoiThucHien=request.user)
+        reaction.delete()
+        return Response({"message": "Cảm xúc đã bị xóa."}, status=status.HTTP_204_NO_CONTENT)
 
 class KhaoSatViewSet(viewsets.ModelViewSet):
     queryset = KhaoSat.objects.all()

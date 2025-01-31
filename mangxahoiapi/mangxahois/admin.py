@@ -108,7 +108,7 @@ class BinhLuanInline(admin.TabularInline):
     readonly_fields = ['nguoiBinhLuan', 'noiDung', 'created_date']
 
 class BaiDangAdmin(admin.ModelAdmin):
-    list_display = ['tieuDe', 'nguoiDangBai', 'created_date', 'hinh_anh_preview', 'khoa_binh_luan_status']
+    list_display = ['tieuDe', 'nguoiDangBai', 'created_date', 'hinh_anh_preview', 'khoa_binh_luan_status', 'tong_luot_tuong_tac', 'tong_luot_like']
     search_fields = ['tieuDe']
     list_filter = ['created_date', 'nguoiDangBai']
     actions = ['khoa_binh_luan']
@@ -131,6 +131,16 @@ class BaiDangAdmin(admin.ModelAdmin):
     hinh_anh_preview.short_description = "Hình ảnh"
 
     khoa_binh_luan.short_description = "Khóa bình luận của bài đăng"
+
+    def tong_luot_tuong_tac(self, obj):
+        return obj.tong_luot_tuong_tac()
+
+    tong_luot_tuong_tac.short_description = "Tổng lượt tương tác"
+
+    def tong_luot_like(self, obj):
+        return obj.tong_luot_like()
+
+    tong_luot_like.short_description = "Tổng lượt Like"
 
 class ReactionAdmin(admin.ModelAdmin):
     list_display = ['baiDang', 'nguoiThucHien', 'loai']

@@ -42,7 +42,7 @@ class User(AbstractUser):
 
         # Kiểm tra nếu tài khoản giảng viên đã quá 24h mà chưa đổi mật khẩu
         if self.vaiTro == VaiTro.GIANGVIEN and not self.password_changed:
-            if self.created_at and (now() - self.created_at).total_seconds() > 86400:  # 24 giờ
+            if self.created_at and (now() - self.created_at).total_seconds() > 30:  # 24 giờ
                 self.is_active = False  # Vô hiệu hóa tài khoản
 
         super().save(*args, **kwargs)
@@ -61,6 +61,18 @@ class BaiDang(models.Model):
 
     def __str__(self):
         return self.tieuDe
+
+    def tong_luot_tuong_tac(self):
+        return self.reactions.count()
+
+    def tong_luot_like(self):
+        return self.reactions.filter(loai=ReactionType.LIKE.value).count()
+
+    def tong_luot_love(self):
+        return self.reactions.filter(loai=ReactionType.LOVE.value).count()
+
+    def tong_luot_haha(self):
+        return self.reactions.filter(loai=ReactionType.HAHA.value).count()
 
 class BinhLuan(models.Model):
     baiDang = models.ForeignKey(BaiDang, on_delete=models.CASCADE, related_name='binhluans')
@@ -93,6 +105,9 @@ class Reaction(models.Model):
     class Meta:
         verbose_name_plural = 'Cảm xúc'
         unique_together = ('baiDang', 'nguoiThucHien')
+
+    def __str__(self):
+        return f"{self.nguoiThucHien.username} reacted {self.get_loai_display()} on {self.baiDang.tieuDe}"
 
 class KhaoSat(models.Model):
     tieuDe = models.CharField(max_length=255)

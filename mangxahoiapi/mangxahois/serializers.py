@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'password', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'tuongTac','date_joined']
+        fields = ['id', 'password', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'tuongTac','date_joined', 'password_changed']
         extra_kwargs = {'password': {'write_only': 'true'}}
 
     def create(self, validated_data):
@@ -33,6 +33,12 @@ class UserSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):  # Sang 24/1
         tuong_tac_data = validated_data.pop('tuongTac', None)
+        password = validated_data.pop('password', None)
+
+        if password:  # Nếu đổi mật khẩu, đánh dấu là đã đổi
+            instance.set_password(password)
+            instance.password_changed = True  # Đánh dấu đã đổi mật khẩu
+
         instance = super().update(instance, validated_data)
 
         if tuong_tac_data:
@@ -50,19 +56,20 @@ class UserSerializer(serializers.ModelSerializer):
 class User2(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'date_joined']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'date_joined', 'password_changed']
 
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'date_joined', 'password_changed']
 
 
 class BaiDangSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaiDang
-        fields = ['id', 'tieuDe', 'thongTin', 'nguoiDangBai', 'created_date', 'updated_date', 'khoa_binh_luan', 'hinh_anh']
+        fields = ['id', 'tieuDe', 'thongTin', 'nguoiDangBai', 'created_date', 'updated_date', 'khoa_binh_luan', 'hinh_anh'
+        ,'tong_luot_tuong_tac', 'tong_luot_like', 'tong_luot_love', 'tong_luot_haha']
 
 
 class BinhLuanSerializer(serializers.ModelSerializer):
