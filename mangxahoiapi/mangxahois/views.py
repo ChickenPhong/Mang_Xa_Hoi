@@ -1,7 +1,9 @@
+from django.contrib.auth.hashers import check_password
 from rest_framework import viewsets, generics
 from rest_framework.parsers import MultiPartParser, FormParser
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.decorators import action, permission_classes
+from rest_framework.decorators import action, permission_classes, api_view
 from rest_framework import status, permissions
 from django.http import JsonResponse
 from django.db.models import Count
@@ -22,6 +24,27 @@ class UserViewSet(viewsets.ModelViewSet,
     queryset = User.objects.filter(is_active=True)
     serializer_class = UserSerializer
     parser_classes = [MultiPartParser, FormParser]
+
+    # API đổi mật khẩu trong ViewSet
+    @action(detail=False, methods=['post'], permission_classes=[IsAuthenticated], url_path="change-password")
+    def change_password(self, request):
+        user = request.user
+        data = request.data
+
+        # Kiểm tra mật khẩu cũ
+        if not check_password(data.get('old_password'), user.password):
+            return Response({"message": "Mật khẩu cũ không đúng"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Kiểm tra mật khẩu mới hợp lệ
+        if len(data.get('new_password')) < 6:
+            return Response({"message": "Mật khẩu mới phải có ít nhất 6 ký tự"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Đổi mật khẩu
+        user.set_password(data.get('new_password'))
+        user.save()
+
+        return Response({"message": "Mật khẩu đã được thay đổi thành công"}, status=status.HTTP_200_OK)
+
 
     # b 22/01
     def get_permissions(self):

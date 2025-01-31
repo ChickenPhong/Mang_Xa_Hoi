@@ -1,3 +1,5 @@
+from html import unescape
+
 from rest_framework import serializers
 import re
 from .models import User, BaiDang, BinhLuan, Reaction, CauHoi, LuaChon, KhaoSat, TraLoi, ThongBaoSuKien
@@ -97,7 +99,7 @@ class KhaoSatSerializer(serializers.ModelSerializer):
         fields = ['id', 'tieuDe', 'moTa', 'nguoiTao', 'created_date', 'is_active', 'cauhois']
 
     def get_moTa(self, obj):
-        return strip_html_tags(obj.moTa)  # Loại bỏ thẻ HTML
+        return strip_html_tags(unescape(obj.moTa))  # Giải mã HTML entities + loại bỏ thẻ HTML
 
 # Serializer cho câu trả lời của người dùng
 class TraLoiSerializer(serializers.ModelSerializer):
@@ -122,4 +124,4 @@ class ThongBaoSuKienSerializer(serializers.ModelSerializer):
         fields = ['id', 'tieuDe', 'noiDung', 'nguoiGui', 'nhomNhan', 'ngay_gui']
 
     def get_noiDung(self, obj):
-        return strip_html_tags(obj.noiDung)  # Loại bỏ thẻ HTML
+        return strip_html_tags(unescape(obj.noiDung))  # Giải mã HTML entities + loại bỏ thẻ HTML

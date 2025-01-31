@@ -1,3 +1,5 @@
+from html import unescape
+
 from django import forms
 from django.contrib import admin
 from django.core.mail import send_mail
@@ -223,8 +225,8 @@ class ThongBaoSuKienAdmin(admin.ModelAdmin):
     def send_email_notifications(self, request, obj):
         recipient_emails = [user.email for user in obj.nhomNhan.all() if user.email]
 
-        # Loại bỏ các thẻ HTML trong nội dung thông báo
-        clean_noiDung = strip_tags(obj.noiDung)
+        # Giải mã HTML entities + loại bỏ thẻ HTML
+        clean_noiDung = strip_tags(unescape(obj.noiDung))
 
         # Debug danh sách email
         print("Danh sách email được gửi:", recipient_emails)
@@ -236,7 +238,6 @@ class ThongBaoSuKienAdmin(admin.ModelAdmin):
                 f"Bạn đã nhận được một thông báo sự kiện mới từ hệ thống.\n\n"
                 f"Nội dung sự kiện:\n"
                 f"{clean_noiDung}\n\n"  # Nội dung đã loại bỏ HTML
-                f"Vui lòng tham gia sự kiện đúng giờ.\n\n"
                 f"Trân trọng,\nQuản trị viên"
             )
             try:
