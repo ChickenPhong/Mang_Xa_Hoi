@@ -62,7 +62,7 @@ class BaiDangSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaiDang
-        fields = ['id', 'tieuDe', 'thongTin', 'nguoiDangBai', 'created_date', 'updated_date', 'khoa_binh_luan']
+        fields = ['id', 'tieuDe', 'thongTin', 'nguoiDangBai', 'created_date', 'updated_date', 'khoa_binh_luan', 'hinh_anh']
 
 
 class BinhLuanSerializer(serializers.ModelSerializer):

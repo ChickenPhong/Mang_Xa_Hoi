@@ -4,6 +4,8 @@ from ckeditor.fields import RichTextField
 from django.contrib.auth.models import AbstractUser
 from enum import IntEnum
 from cloudinary.models import CloudinaryField
+from django.utils.timezone import now
+
 
 class VaiTro(IntEnum):
     QUANTRIVIEN = 1
@@ -21,6 +23,8 @@ class User(AbstractUser):
     vaiTro = models.IntegerField(choices=VaiTro.choices(), default=VaiTro.QUANTRIVIEN)
     tuongTac = models.ManyToManyField("self", symmetrical=False, related_name="tuong_tac")
     is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)  # Thời gian tạo tài khoản
+    password_changed = models.BooleanField(default=False)  # Giảng viên đã đổi mật khẩu chưa?
 
     class Meta:
         verbose_name_plural = 'Người dùng'
@@ -30,8 +34,17 @@ class User(AbstractUser):
         if self._state.adding:
             if self.vaiTro == VaiTro.CUUSINHVIEN:
                 self.is_active = False  # Chờ xét duyệt
+            elif self.vaiTro == VaiTro.GIANGVIEN:
+                self.is_active = True  # Giảng viên được kích hoạt ngay lập tức
+                self.password_changed = False  # Đánh dấu chưa đổi mật khẩu
             else:
-                self.is_active = True  # Mặc định kích hoạt cho Quản trị viên và Giảng viên
+                self.is_active = True  # Mặc định kích hoạt cho Quản trị viên
+
+        # Kiểm tra nếu tài khoản giảng viên đã quá 24h mà chưa đổi mật khẩu
+        if self.vaiTro == VaiTro.GIANGVIEN and not self.password_changed:
+            if self.created_at and (now() - self.created_at).total_seconds() > 86400:  # 24 giờ
+                self.is_active = False  # Vô hiệu hóa tài khoản
+
         super().save(*args, **kwargs)
 
 class BaiDang(models.Model):
@@ -41,6 +54,7 @@ class BaiDang(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     khoa_binh_luan = models.BooleanField(default=False)
+    hinh_anh = models.ImageField(upload_to='media/baidangs/%Y/%m/', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Bài đăng'

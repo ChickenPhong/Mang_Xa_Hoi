@@ -6,7 +6,7 @@ from django.core.mail import send_mail
 from django.http import HttpResponseRedirect, request
 from django.template.response import TemplateResponse
 from django.urls import path, reverse
-from django.utils.html import mark_safe, strip_tags
+from django.utils.html import mark_safe, strip_tags, format_html
 from .models import User, BaiDang, BinhLuan, Reaction, LuaChon, CauHoi, KhaoSat, TraLoi, ThongKeKhaoSat, VaiTro, ThongBaoSuKien
 
 
@@ -108,7 +108,7 @@ class BinhLuanInline(admin.TabularInline):
     readonly_fields = ['nguoiBinhLuan', 'noiDung', 'created_date']
 
 class BaiDangAdmin(admin.ModelAdmin):
-    list_display = ['tieuDe', 'nguoiDangBai', 'created_date', 'khoa_binh_luan_status']
+    list_display = ['tieuDe', 'nguoiDangBai', 'created_date', 'hinh_anh_preview', 'khoa_binh_luan_status']
     search_fields = ['tieuDe']
     list_filter = ['created_date', 'nguoiDangBai']
     actions = ['khoa_binh_luan']
@@ -122,6 +122,13 @@ class BaiDangAdmin(admin.ModelAdmin):
     def khoa_binh_luan(self, request, queryset):
         queryset.update(khoa_binh_luan=True)
         self.message_user(request, "Bình luận đã được khóa.")
+
+    def hinh_anh_preview(self, obj):
+        if obj.hinh_anh:
+            return format_html('<img src="{}" width="100" height="100" />'.format(obj.hinh_anh.url))
+        return "Không có ảnh"
+
+    hinh_anh_preview.short_description = "Hình ảnh"
 
     khoa_binh_luan.short_description = "Khóa bình luận của bài đăng"
 
@@ -200,7 +207,7 @@ class ThongBaoSuKienForm(forms.ModelForm):
         # Lọc người dùng có vai trò là Quản Trị Viên
         self.fields['nguoiGui'].queryset = User.objects.filter(vaiTro=VaiTro.QUANTRIVIEN)
         # Lọc người dùng có vai trò là CỰU SINH VIÊN
-        self.fields['nhomNhan'].queryset = User.objects.filter(vaiTro=VaiTro.CUUSINHVIEN)
+        self.fields['nhomNhan'].queryset = User.objects.filter(vaiTro=VaiTro.CUUSINHVIEN, is_active=True)
 
 
 class ThongBaoSuKienAdmin(admin.ModelAdmin):
