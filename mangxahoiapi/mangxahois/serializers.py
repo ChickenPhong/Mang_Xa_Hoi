@@ -103,6 +103,7 @@ class KhaoSatSerializer(serializers.ModelSerializer):
 
 # Serializer cho câu trả lời của người dùng
 class TraLoiSerializer(serializers.ModelSerializer):
+    luaChon = serializers.PrimaryKeyRelatedField(queryset=LuaChon.objects.all())
 
     class Meta:
         model = TraLoi
