@@ -25,11 +25,19 @@ class User(AbstractUser):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)  # Thời gian tạo tài khoản
     password_changed = models.BooleanField(default=False)  # Giảng viên đã đổi mật khẩu chưa?
+    manually_unlocked = models.BooleanField(default=False)  # Đánh dấu admin đã mở khóa
 
     class Meta:
         verbose_name_plural = 'Người dùng'
 
     def save(self, *args, **kwargs):
+
+        # Nếu tài khoản vừa được admin mở khóa, cho phép đăng nhập một lần
+        if self.manually_unlocked:
+            self.is_active = True
+            super().save(*args, **kwargs)
+            return
+
         # Chỉ thiết lập giá trị mặc định khi tạo mới người dùng
         if self._state.adding:
             if self.vaiTro == VaiTro.CUUSINHVIEN:
@@ -44,6 +52,7 @@ class User(AbstractUser):
         if self.vaiTro == VaiTro.GIANGVIEN and not self.password_changed:
             if self.created_at and (now() - self.created_at).total_seconds() > 30:  # 24 giờ
                 self.is_active = False  # Vô hiệu hóa tài khoản
+                self.manually_unlocked = False  # Reset trạng thái mở khóa
 
         super().save(*args, **kwargs)
 

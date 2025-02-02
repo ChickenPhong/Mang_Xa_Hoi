@@ -37,14 +37,28 @@ class UserViewSet(viewsets.ModelViewSet,
             return Response({"message": "Mật khẩu cũ không đúng"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Kiểm tra mật khẩu mới hợp lệ
-        if len(data.get('new_password')) < 6:
-            return Response({"message": "Mật khẩu mới phải có ít nhất 6 ký tự"}, status=status.HTTP_400_BAD_REQUEST)
+        if len(data.get('new_password')) < 3:
+            return Response({"message": "Mật khẩu mới phải có ít nhất 3 ký tự"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Đổi mật khẩu
         user.set_password(data.get('new_password'))
         user.save()
 
         return Response({"message": "Mật khẩu đã được thay đổi thành công"}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAdminUser], url_path="unlock-account")
+    def unlock_account(self, request, pk=None):
+        """Admin mở khóa tài khoản giảng viên bị khóa"""
+        user = get_object_or_404(User, pk=pk)
+
+        if user.is_active:
+            return Response({"message": "Tài khoản này đã được kích hoạt."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user.is_active = True
+        user.manually_unlocked = True
+        user.save()
+
+        return Response({"message": f"Tài khoản {user.username} đã được mở khóa."}, status=status.HTTP_200_OK)
 
 
     # b 22/01
@@ -54,9 +68,16 @@ class UserViewSet(viewsets.ModelViewSet,
 
         return [permissions.AllowAny()]
 
-    @action(methods=['get'], url_path='current-user', detail=False)
+    @action(methods=['get'], url_path='current-user', detail=False, permission_classes=[permissions.IsAuthenticated])
     def get_current_user(self, request):
-        return Response(UserSerializer(request.user).data)
+        if not request.user.is_authenticated:
+            return Response({"message": "Người dùng chưa đăng nhập"}, status=status.HTTP_401_UNAUTHORIZED)
+
+        user_data = UserSerializer(request.user).data
+        return Response({
+            **user_data,
+            "manually_unlocked": request.user.manually_unlocked  # Thêm trạng thái mở khóa
+        })
 
 
 # ViewSet cho BaiDang

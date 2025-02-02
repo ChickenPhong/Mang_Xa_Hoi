@@ -26,7 +26,7 @@ class MyAdminSite(admin.AdminSite):
         })
 
 class UserAdmin(admin.ModelAdmin):
-    fields = ('username', 'password', 'email', 'first_name', 'last_name', 'SDT', 'vaiTro', 'image','avatar', 'is_active')
+    fields = ('username', 'password', 'email', 'first_name', 'last_name', 'SDT', 'vaiTro', 'image','avatar', 'is_active', 'manually_unlocked')
     list_display = ['username', 'email', 'SDT', 'vaiTro', 'is_active']
     search_fields = ['username']
     readonly_fields = ['avatar']
@@ -69,6 +69,11 @@ class UserAdmin(admin.ModelAdmin):
                 send_mail(subject, message, 'admin@yourdomain.com', [obj.email])
 
             obj.set_password(form.cleaned_data['password'])
+
+        elif change:
+            previous_instance = User.objects.get(pk=obj.pk)
+            if previous_instance.is_active == False and obj.is_active == True:
+                obj.manually_unlocked = True  # Admin đã mở khóa
         super().save_model(request, obj, form, change)
 
     def response_add(self, request, obj, post_url_continue=None):
