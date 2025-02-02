@@ -108,7 +108,7 @@ class BinhLuanInline(admin.TabularInline):
     readonly_fields = ['nguoiBinhLuan', 'noiDung', 'created_date']
 
 class BaiDangAdmin(admin.ModelAdmin):
-    list_display = ['tieuDe', 'nguoiDangBai', 'created_date', 'hinh_anh_preview', 'khoa_binh_luan_status', 'tong_luot_tuong_tac', 'tong_luot_like']
+    list_display = ['tieuDe', 'nguoiDangBai', 'created_date', 'khoa_binh_luan_status', 'tong_luot_tuong_tac', 'tong_luot_like']
     search_fields = ['tieuDe']
     list_filter = ['created_date', 'nguoiDangBai']
     actions = ['khoa_binh_luan']
@@ -122,13 +122,6 @@ class BaiDangAdmin(admin.ModelAdmin):
     def khoa_binh_luan(self, request, queryset):
         queryset.update(khoa_binh_luan=True)
         self.message_user(request, "Bình luận đã được khóa.")
-
-    def hinh_anh_preview(self, obj):
-        if obj.hinh_anh:
-            return format_html('<img src="{}" width="100" height="100" />'.format(obj.hinh_anh.url))
-        return "Không có ảnh"
-
-    hinh_anh_preview.short_description = "Hình ảnh"
 
     khoa_binh_luan.short_description = "Khóa bình luận của bài đăng"
 

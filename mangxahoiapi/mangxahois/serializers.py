@@ -65,11 +65,19 @@ class UserDetailSerializer(serializers.ModelSerializer):
 
 
 class BaiDangSerializer(serializers.ModelSerializer):
+    thongTin = serializers.CharField()
 
     class Meta:
         model = BaiDang
-        fields = ['id', 'tieuDe', 'thongTin', 'nguoiDangBai', 'created_date', 'updated_date', 'khoa_binh_luan', 'hinh_anh'
-        ,'tong_luot_tuong_tac', 'tong_luot_like', 'tong_luot_love', 'tong_luot_haha']
+        fields = ['id', 'tieuDe', 'thongTin', 'nguoiDangBai', 'created_date', 'updated_date', 'khoa_binh_luan',
+                  'tong_luot_tuong_tac', 'tong_luot_like', 'tong_luot_love', 'tong_luot_haha']
+
+    def to_representation(self, instance):
+        """Ghi đè phương thức này để xử lý dữ liệu trước khi trả về."""
+        data = super().to_representation(instance)
+        data['thongTin'] = strip_html_tags(unescape(data['thongTin']))  # Giải mã HTML + loại bỏ thẻ HTML
+        return data
+
 
 
 class BinhLuanSerializer(serializers.ModelSerializer):
@@ -125,11 +133,14 @@ class TraLoiSerializer(serializers.ModelSerializer):
         return data
 
 class ThongBaoSuKienSerializer(serializers.ModelSerializer):
-    noiDung = serializers.SerializerMethodField()
+    noiDung = serializers.CharField()
 
     class Meta:
         model = ThongBaoSuKien
         fields = ['id', 'tieuDe', 'noiDung', 'nguoiGui', 'nhomNhan', 'ngay_gui']
 
-    def get_noiDung(self, obj):
-        return strip_html_tags(unescape(obj.noiDung))  # Giải mã HTML entities + loại bỏ thẻ HTML
+    def to_representation(self, instance):
+        """Ghi đè phương thức này để xử lý dữ liệu trước khi trả về."""
+        data = super().to_representation(instance)
+        data['noiDung'] = strip_html_tags(unescape(data['noiDung']))  # Giải mã HTML + loại bỏ thẻ HTML
+        return data

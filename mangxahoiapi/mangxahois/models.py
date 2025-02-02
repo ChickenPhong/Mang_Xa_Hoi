@@ -54,7 +54,6 @@ class BaiDang(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     khoa_binh_luan = models.BooleanField(default=False)
-    hinh_anh = models.ImageField(upload_to='media/baidangs/%Y/%m/', null=True, blank=True)
 
     class Meta:
         verbose_name_plural = 'Bài đăng'

@@ -92,12 +92,25 @@ class BinhLuanViewSet(viewsets.ModelViewSet):
     serializer_class = BinhLuanSerializer
 
     def destroy(self, request, *args, **kwargs):
+        """
+        Cho phép:
+        - Người đăng bình luận có thể xóa bình luận của mình.
+        - Chủ bài đăng có thể xóa bất kỳ bình luận nào trong bài đăng của họ.
+        - Quản trị viên có thể xóa bất kỳ bình luận nào.
+        """
         instance = self.get_object()
-        if instance.nguoiBinhLuan == request.user or instance.baiDang.nguoiDangBai == request.user:
+
+        # Kiểm tra quyền xóa
+        if (
+                request.user == instance.nguoiBinhLuan or  # Người bình luận
+                request.user == instance.baiDang.nguoiDangBai or  # Chủ bài đăng
+                request.user.is_staff or request.user.is_superuser  # Quản trị viên
+        ):
             self.perform_destroy(instance)
             return Response({"message": "Bình luận đã bị xóa."}, status=status.HTTP_204_NO_CONTENT)
-        return Response({"error": "Bạn không có quyền xóa bình luận này."}, status=status.HTTP_403_FORBIDDEN)
 
+        # Nếu không có quyền xóa, trả về lỗi 403 Forbidden
+        return Response({"error": "Bạn không có quyền xóa bình luận này."}, status=status.HTTP_403_FORBIDDEN)
 
 # ViewSet cho Reaction (Like, Haha, Love)
 class ReactionViewSet(viewsets.ModelViewSet):

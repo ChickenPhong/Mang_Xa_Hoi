@@ -143,9 +143,10 @@ REST_FRAMEWORK ={
         (
             'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
         ),
-    'DEFAULT_PARSER_CLASSES': [
-            'rest_framework.parsers.JSONParser',  #Đảm bảo server hiểu request JSON
-        ],
+    # 'DEFAULT_PARSER_CLASSES': [
+    #         'rest_framework.parsers.JSONParser',  #Đảm bảo server hiểu request JSON
+    #     ],
+
 }
 # Cấu hình email SMTP
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
