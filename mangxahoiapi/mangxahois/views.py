@@ -1,5 +1,6 @@
 from django.contrib.auth.hashers import check_password
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
 from rest_framework import viewsets, generics
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated
@@ -10,7 +11,7 @@ from django.http import JsonResponse
 from django.db.models import Count
 from django.db.models.functions import TruncYear, TruncQuarter, TruncMonth, ExtractYear
 
-from .models import User, BaiDang, BinhLuan, Reaction, TraLoi, KhaoSat, CauHoi, LuaChon, ThongBaoSuKien, ReactionType
+from .models import User, BaiDang, BinhLuan, Reaction, TraLoi, KhaoSat, CauHoi, LuaChon, ThongBaoSuKien, ReactionType, VaiTro
 from .serializers import (
     UserSerializer, BaiDangSerializer, BinhLuanSerializer, ReactionSerializer, TraLoiSerializer, KhaoSatSerializer,
     CauHoiSerializer, LuaChonSerializer, ThongBaoSuKienSerializer
@@ -42,6 +43,7 @@ class UserViewSet(viewsets.ModelViewSet,
 
         # Đổi mật khẩu
         user.set_password(data.get('new_password'))
+        user.password_changed = True  # ✅ Đánh dấu đã đổi mật khẩu
         user.save()
 
         return Response({"message": "Mật khẩu đã được thay đổi thành công"}, status=status.HTTP_200_OK)
@@ -70,14 +72,19 @@ class UserViewSet(viewsets.ModelViewSet,
 
     @action(methods=['get'], url_path='current-user', detail=False, permission_classes=[permissions.IsAuthenticated])
     def get_current_user(self, request):
-        if not request.user.is_authenticated:
-            return Response({"message": "Người dùng chưa đăng nhập"}, status=status.HTTP_401_UNAUTHORIZED)
+        user = request.user
 
-        user_data = UserSerializer(request.user).data
-        return Response({
-            **user_data,
-            "manually_unlocked": request.user.manually_unlocked  # Thêm trạng thái mở khóa
-        })
+        # Kiểm tra nếu là giảng viên, chưa đổi mật khẩu và đã quá 30 giây
+        if user.vaiTro == VaiTro.GIANGVIEN and not user.password_changed:
+            elapsed_time = (now() - user.created_at).total_seconds()
+            if elapsed_time > 30:
+                user.is_active = False  # Vô hiệu hóa tài khoản
+                user.manually_unlocked = False
+                user.save()
+                return Response({"message": "Tài khoản của bạn đã bị vô hiệu hóa do không đổi mật khẩu kịp thời."},
+                                status=status.HTTP_403_FORBIDDEN)
+
+        return Response(UserSerializer(user).data)
 
 
 # ViewSet cho BaiDang
