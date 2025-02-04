@@ -63,7 +63,7 @@ class UserAdmin(admin.ModelAdmin):
                 subject = "Thông tin tài khoản giảng viên"
                 message = (
                     f"Xin chào {obj.first_name} {obj.last_name},\n\n"
-                    f"Tài khoản của bạn đã được tạo thành công trên hệ thống.\n"
+                    f"Tài khoản giảng viên của bạn đã được quản trị viên tạo thành công.\n"
                     f"Thông tin đăng nhập:\n"
                     f"Username: {obj.username}\n"
                     f"Password: {default_password}\n\n"
