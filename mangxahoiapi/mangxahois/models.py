@@ -20,6 +20,7 @@ class User(AbstractUser):
     SDT = models.CharField(max_length=10)
     # image = CloudinaryField('avatar', null=True)
     image = models.ImageField(upload_to='media/nguoidungs/%Y/%m/', null=True)
+    coverImage = models.ImageField(upload_to='media/cover_images/%Y/%m/', null=True, blank=True)
     vaiTro = models.IntegerField(choices=VaiTro.choices(), default=VaiTro.QUANTRIVIEN)
     tuongTac = models.ManyToManyField("self", symmetrical=False, related_name="tuong_tac")
     is_active = models.BooleanField(default=True)

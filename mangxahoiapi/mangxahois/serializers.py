@@ -15,7 +15,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'password', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'tuongTac','date_joined', 'password_changed', 'manually_unlocked']
+        fields = ['id', 'password', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', "coverImage", 'vaiTro', 'tuongTac','date_joined', 'password_changed', 'manually_unlocked']
         extra_kwargs = {'password': {'write_only': 'true'}}
 
     def create(self, validated_data):
@@ -50,18 +50,19 @@ class UserSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         data = super().to_representation(instance)
         data['image'] = instance.image.url if instance.image else ''
+        data['coverImage'] = instance.coverImage.url if instance.coverImage else ''
         return data
     # b
 
 class User2(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'date_joined', 'password_changed', 'manually_unlocked']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', "coverImage", 'vaiTro', 'date_joined', 'password_changed', 'manually_unlocked']
 
 class UserDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', 'vaiTro', 'date_joined', 'password_changed', 'manually_unlocked']
+        fields = ['id', 'email', 'username', 'first_name', 'last_name', 'SDT', 'image', "coverImage", 'vaiTro', 'date_joined', 'password_changed', 'manually_unlocked']
 
 
 class BaiDangSerializer(serializers.ModelSerializer):
