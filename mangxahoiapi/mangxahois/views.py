@@ -75,7 +75,7 @@ class UserViewSet(viewsets.ModelViewSet,
         user = request.user
 
         # Kiểm tra nếu là giảng viên, chưa đổi mật khẩu và đã quá 30 giây
-        if user.vaiTro == VaiTro.GIANGVIEN and not user.password_changed:
+        if user.vaiTro == VaiTro.GIANGVIEN and not user.password_changed and not user.manually_unlocked:
             elapsed_time = (now() - user.created_at).total_seconds()
             if elapsed_time > 30:
                 user.is_active = False  # Vô hiệu hóa tài khoản
