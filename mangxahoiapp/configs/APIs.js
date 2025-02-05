@@ -2,12 +2,18 @@ import axios from "axios";
 
 const BASE_URL = "https://chickenphong.pythonanywhere.com";
 
+
 export const endpoints = {
     'baidangs': '/baidangs/',
     'login': '/o/token/',
     'current-user': '/users/current-user/', 
     'register': '/users/',
     'userDetail': '/users/',
+    'thongbaosukiens': '/thongbaosukiens/',  // API cho thông báo
+    'khaosats': '/khaosats/',  // API cho khảo sát
+    'cauhois': "/cauhois/",  // Đảm bảo API đúng với backend
+    'tralois': "/tralois/",
+    'luachons': "/luachons/",
 }
 
 export const authApis = (token) => {
