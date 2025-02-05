@@ -76,7 +76,7 @@ const HomeStackNavigator = () => {
 const ProfileStackNavigator = () => {
   return (
     <Stack.Navigator>
-      <Stack.Screen name="Profile" component={Profile} options={{ title: "Tài khoản" }} />
+      <Stack.Screen name="ProfileMain" component={Profile} options={{ title: "Tài khoản" }} />
       <Stack.Screen name="ChiTietBaiDang" component={ChiTietBaiDang} options={{ title: "Chi tiết bài đăng" }} />
       <Stack.Screen name="TrangCaNhan" component={TrangCaNhan} options={{ title: "Trang cá nhân" }} />
       <Stack.Screen name="ChangePassword" component={ChangePassword} options={{ title: "Thay đổi mật khẩu" }} />
@@ -188,7 +188,7 @@ const TabNavigator = ({ navigation }) => {
             }}
           />
           <Tab.Screen
-            name="Profile"
+            name="ProfileTab"
             component={ProfileStackNavigator}
             options={{
               title: "Tài khoản",
